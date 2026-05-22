@@ -209,7 +209,71 @@ async function run() {
       res.send(result);
     });
 
+    /* =========================================
+       ADD IDEA
+    ========================================= */
 
+    app.post("/ideas", async (req, res) => {
+      const newIdea = req.body;
+
+      const ideaData = {
+        ...newIdea,
+
+        author: newIdea.author,
+
+        profile: newIdea.profile,
+
+        userEmail: newIdea.userEmail,
+
+        createdAt: new Date(),
+      };
+
+      const result = await ideaCollection.insertOne(ideaData);
+
+      res.send(result);
+    });
+
+    /* =========================================
+       MY IDEAS
+    ========================================= */
+
+    app.get("/my-ideas/:email", async (req, res) => {
+      const { email } = req.params;
+
+      const query = {
+        userEmail: email,
+      };
+
+      const result = await ideaCollection
+        .find(query)
+        .sort({
+          _id: -1,
+        })
+        .toArray();
+
+      res.send(result);
+    });
+
+    /* =========================================
+       UPDATE IDEA
+    ========================================= */
+
+    app.patch("/ideas/:id", async (req, res) => {
+      const { id } = req.params;
+
+      const updatedData = req.body;
+
+      const userEmail = updatedData.userEmail;
+
+      const existingIdea = await ideaCollection.findOne({
+        _id: new ObjectId(id),
+      });
+
+      if (existingIdea.userEmail !== userEmail) {
+        return res.status(403).send({
+          message: "Unauthorized access",
+        });
+      }
 
       const query = {
         _id: new ObjectId(id),
