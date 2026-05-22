@@ -411,7 +411,46 @@ async function run() {
       res.send(result);
     });
 
+    /* =========================================
+       MY INTERACTIONS
+    ========================================= */
 
+    app.get("/my-interactions/:email", async (req, res) => {
+      const { email } = req.params;
+
+      const comments = await commentsCollection
+        .find({
+          userEmail: email,
+        })
+        .sort({
+          createdAt: -1,
+        })
+        .toArray();
+
+      const ideaIds = comments.map((comment) => new ObjectId(comment.ideaId));
+
+      const ideas = await ideaCollection
+        .find({
+          _id: {
+            $in: ideaIds,
+          },
+        })
+        .toArray();
+
+      const interactions = comments.map((comment) => {
+        const idea = ideas.find((i) => i._id.toString() === comment.ideaId);
+
+        return {
+          ...idea,
+
+          commentText: comment.text,
+
+          commentCreatedAt: comment.createdAt,
+        };
+      });
+
+      res.send(interactions);
+    });
 
     console.log("MongoDB Connected Successfully");
   } finally {
