@@ -45,6 +45,100 @@ async function run() {
 
     const userCollection = db.collection("users");
 
+    /* =========================================
+       USERS
+    ========================================= */
+
+    // SAVE USER
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+
+      const existingUser = await userCollection.findOne({
+        email: user.email,
+      });
+
+      if (existingUser) {
+        return res.send({
+          message: "User already exists",
+        });
+      }
+
+      const result = await userCollection.insertOne(user);
+
+      res.send(result);
+    });
+
+    // GET USER
+    app.get("/users/:email", async (req, res) => {
+      const { email } = req.params;
+
+      const result = await userCollection.findOne({
+        email,
+      });
+
+      res.send(result);
+    });
+
+    // UPDATE PROFILE
+    app.patch("/users/:email", async (req, res) => {
+      try {
+        const { email } = req.params;
+
+        const { name, image } = req.body;
+
+        const filter = {
+          email,
+        };
+
+        const updatedDoc = {
+          $set: {},
+        };
+
+        if (name) {
+          updatedDoc.$set.name = name;
+        }
+
+        if (image) {
+          updatedDoc.$set.image = image;
+        }
+
+        const result = await userCollection.updateOne(filter, updatedDoc);
+
+        // UPDATE IDEA AUTHOR INFO
+        await ideaCollection.updateMany(
+          {
+            userEmail: email,
+          },
+          {
+            $set: {
+              author: name,
+
+              profile: image,
+            },
+          },
+        );
+
+        // UPDATE COMMENT USER INFO
+        await commentsCollection.updateMany(
+          {
+            userEmail: email,
+          },
+          {
+            $set: {
+              userName: name,
+
+              userProfile: image,
+            },
+          },
+        );
+
+        res.send(result);
+      } catch (error) {
+        res.status(500).send({
+          error: "Failed to update profile",
+        });
+      }
+    });
 
 
 
