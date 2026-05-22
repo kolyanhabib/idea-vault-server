@@ -193,7 +193,84 @@ async function run() {
       res.send(result);
     });
 
+    /* =========================================
+       SINGLE IDEA
+    ========================================= */
 
+    app.get("/ideas/:ideaID", async (req, res) => {
+      const { ideaID } = req.params;
+
+      const query = {
+        _id: new ObjectId(ideaID),
+      };
+
+      const result = await ideaCollection.findOne(query);
+
+      res.send(result);
+    });
+
+
+
+      const query = {
+        _id: new ObjectId(id),
+      };
+
+      const updatedDoc = {
+        $set: {
+          title: updatedData.title,
+
+          shortDescription: updatedData.shortDescription,
+
+          detailedDescription: updatedData.detailedDescription,
+
+          category: updatedData.category,
+
+          tags: updatedData.tags,
+
+          imageURL: updatedData.imageURL,
+
+          estimatedBudget: updatedData.estimatedBudget,
+
+          targetAudience: updatedData.targetAudience,
+
+          problemStatement: updatedData.problemStatement,
+
+          proposedSolution: updatedData.proposedSolution,
+        },
+      };
+
+      const result = await ideaCollection.updateOne(query, updatedDoc);
+
+      res.send(result);
+    });
+
+    /* =========================================
+       DELETE IDEA
+    ========================================= */
+
+    app.delete("/ideas/:id", async (req, res) => {
+      const { id } = req.params;
+
+      const userEmail = req.query.email;
+
+      const existingIdea = await ideaCollection.findOne({
+        _id: new ObjectId(id),
+      });
+
+      if (existingIdea.userEmail !== userEmail) {
+        return res.status(403).send({
+          message: "Unauthorized access",
+        });
+      }
+
+      const query = {
+        _id: new ObjectId(id),
+      };
+
+      const result = await ideaCollection.deleteOne(query);
+
+      res.send(result);
+    });
 
 
 
