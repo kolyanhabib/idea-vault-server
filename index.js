@@ -140,7 +140,42 @@ async function run() {
       }
     });
 
+    /* =========================================
+       GET ALL IDEAS
+    ========================================= */
 
+    app.get("/ideas", async (req, res) => {
+      const search = req.query.search || "";
+
+      const category = req.query.category || "";
+
+      let query = {};
+
+      // SEARCH
+      if (search) {
+        query.title = {
+          $regex: search,
+
+          $options: "i",
+        };
+      }
+
+      // FILTER
+      if (category && category !== "All") {
+        query.category = category;
+      }
+
+      const result = await ideaCollection
+        .find(query)
+        .sort({
+          _id: -1,
+        })
+        .toArray();
+
+      res.send(result);
+    });
+
+ 
 
 
 
