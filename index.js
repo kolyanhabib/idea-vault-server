@@ -336,7 +336,80 @@ async function run() {
       res.send(result);
     });
 
+    /* =========================================
+       ADD COMMENT
+    ========================================= */
 
+    app.post("/comments", async (req, res) => {
+      const commentData = req.body;
+
+      commentData.createdAt = new Date();
+
+      const result = await commentsCollection.insertOne(commentData);
+
+      res.send(result);
+    });
+
+    /* =========================================
+       GET COMMENTS
+    ========================================= */
+
+    app.get("/comments/:ideaId", async (req, res) => {
+      const { ideaId } = req.params;
+
+      const query = {
+        ideaId,
+      };
+
+      const result = await commentsCollection
+        .find(query)
+        .sort({
+          createdAt: -1,
+        })
+        .toArray();
+
+      res.send(result);
+    });
+
+    /* =========================================
+       DELETE COMMENT
+    ========================================= */
+
+    app.delete("/comments/:id", async (req, res) => {
+      const { id } = req.params;
+
+      const query = {
+        _id: new ObjectId(id),
+      };
+
+      const result = await commentsCollection.deleteOne(query);
+
+      res.send(result);
+    });
+
+    /* =========================================
+       UPDATE COMMENT
+    ========================================= */
+
+    app.patch("/comments/:id", async (req, res) => {
+      const { id } = req.params;
+
+      const { text } = req.body;
+
+      const query = {
+        _id: new ObjectId(id),
+      };
+
+      const updatedDoc = {
+        $set: {
+          text,
+        },
+      };
+
+      const result = await commentsCollection.updateOne(query, updatedDoc);
+
+      res.send(result);
+    });
 
 
 
