@@ -175,7 +175,23 @@ async function run() {
       res.send(result);
     });
 
- 
+    /* =========================================
+       FEATURED IDEAS
+    ========================================= */
+
+    app.get("/featured", async (req, res) => {
+      const result = await ideaCollection
+        .aggregate([
+          {
+            $sample: {
+              size: 6,
+            },
+          },
+        ])
+        .toArray();
+
+      res.send(result);
+    });
 
 
 
